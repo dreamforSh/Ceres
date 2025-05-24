@@ -151,9 +151,9 @@ public class NettyOptimizer {
             if (msg instanceof Packet<?>) {
                 PACKETS_SENT.incrementAndGet();
 
-                // 检查是否是已经优化过的数据包
+
                 if (isOptimizedPacket(msg)) {
-                    // 如果是已经优化过的数据包（如CompressedDataPacket），直接传递，不进行额外处理
+
                     OPTIMIZED_PACKETS_PASSED.incrementAndGet();
                     if (CeresConfig.COMMON.enableLogging.get()) {
                         Ceres.LOGGER.debug("Passing optimized packet: {}", msg.getClass().getSimpleName());

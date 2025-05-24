@@ -5,8 +5,22 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "ceres.refmap.json",
   "mixins": [
+    "entity.CeresEntitySectionStorageMixin",
+    "entity.CeresServerLevelMixin",
+    "network.avoidwork.CeresChunkMapMixin",
+    "network.flushconsolidation.CeresChunkMapFlushMixin",
+    "network.flushconsolidation.CeresConnectionFlushMixin",
+    "network.microopt.CeresFriendlyByteBufMixin",
+    "network.microopt.CeresServerEntityOptMixin",
+    "network.pipeline.CeresLegacyQueryHandlerMixin",
+    "network.pipeline.CeresVarint21FrameDecoderMixin",
+    "network.pipeline.compression.CeresConnectionCompressionMixin",
+    "network.pipeline.encryption.CeresConnectionMixin",
+    "network.pipeline.encryption.CeresServerLoginPacketListenerImplMixin",
+    "player.CeresServerPlayerMixin"
   ],
   "client": [
+    "entity.CeresClientLevelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

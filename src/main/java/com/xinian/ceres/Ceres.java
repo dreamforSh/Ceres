@@ -1,5 +1,6 @@
 package com.xinian.ceres;
 
+import com.xinian.ceres.common.CeresNetworkCore;
 import com.xinian.ceres.network.CompressedDataPacket;
 import com.xinian.ceres.network.DuplicatePacketFilter;
 import com.xinian.ceres.network.NetworkOptimizer;
@@ -18,13 +19,17 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Ceres模组主类
+ * 提供网络优化和性能改进
+ */
 @Mod(Ceres.MOD_ID)
 public class Ceres {
     public static final String MOD_ID = "ceres";
-    public static final String VERSION = "0.2.1";
+    public static final String VERSION = "0.2.2";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
-    private static final String PROTOCOL_VERSION = "0.2.1";
+    private static final String PROTOCOL_VERSION = "0.2.2";
 
     public static final SimpleChannel NETWORK;
     static {
@@ -38,12 +43,14 @@ public class Ceres {
     }
 
     private static ResourceLocation makeResourceLocation() {
-        return new ResourceLocation(MOD_ID, "main");
+        // 使用最新的方法创建ResourceLocation
+        return ResourceLocation.of(MOD_ID + ":main", ':');
     }
 
     private boolean isModernMode;
 
     public Ceres() {
+        // 使用最新的方法获取事件总线
         final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         modEventBus.addListener(this::commonSetup);
@@ -53,6 +60,7 @@ public class Ceres {
         MinecraftForge.EVENT_BUS.register(this);
 
         CeresConfig.init();
+        CeresNetworkCore.init();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             LOGGER.info("Shutting down Ceres network optimizations");
