@@ -20,18 +20,18 @@ public class NetworkInjector {
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         try {
-            // 检查是否使用现代模式并启用了Netty优化
+
             if (!isNettyOptimizationEnabled()) {
                 return;
             }
 
-            // 获取服务器端的网络连接
+
             if (event.getEntity() instanceof ServerPlayer) {
                 ServerPlayer player = (ServerPlayer) event.getEntity();
                 ServerGamePacketListenerImpl packetListener = player.connection;
                 Connection networkManager = packetListener.getConnection();
 
-                // 注入优化处理器
+
                 NettyOptimizer.injectOptimizer(networkManager, NetworkDirection.PLAY_TO_CLIENT);
 
                 Ceres.LOGGER.info("Injected packet optimizer for player: {}", player.getName().getString());
@@ -51,17 +51,17 @@ public class NetworkInjector {
     @OnlyIn(Dist.CLIENT)
     public static void onClientConnected(ClientPlayerNetworkEvent.LoggingIn event) {
         try {
-            // 检查是否使用现代模式并启用了Netty优化
+
             if (!isNettyOptimizationEnabled()) {
                 return;
             }
 
-            // 获取客户端的网络连接
+
             Minecraft minecraft = Minecraft.getInstance();
             if (minecraft.getConnection() != null) {
                 Connection networkManager = minecraft.getConnection().getConnection();
 
-                // 注入优化处理器
+
                 NettyOptimizer.injectOptimizer(networkManager, NetworkDirection.PLAY_TO_SERVER);
 
                 Ceres.LOGGER.info("Injected packet optimizer for client connection");
@@ -75,7 +75,7 @@ public class NetworkInjector {
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void onClientDisconnected(ClientPlayerNetworkEvent.LoggingOut event) {
-        // 可以在这里执行断开连接时的清理操作
+
     }
 
 
