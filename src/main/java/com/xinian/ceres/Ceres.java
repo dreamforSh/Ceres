@@ -1,6 +1,7 @@
 package com.xinian.ceres;
 
 import com.xinian.ceres.common.CeresNetworkCore;
+import com.xinian.ceres.common.compression.CeresCompressionManager;
 import com.xinian.ceres.network.CompressedDataPacket;
 import com.xinian.ceres.network.DuplicatePacketFilter;
 import com.xinian.ceres.network.NetworkOptimizer;
@@ -19,17 +20,15 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/**
- * Ceres模组主类
- * 提供网络优化和性能改进
- */
+
 @Mod(Ceres.MOD_ID)
 public class Ceres {
     public static final String MOD_ID = "ceres";
-    public static final String VERSION = "0.2.2";
+    public static final String VERSION = "0.2.3";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
-    private static final String PROTOCOL_VERSION = "0.2.2";
+    private static final String PROTOCOL_VERSION = "0.2.3";
+    private static boolean initialized = false;
 
     public static final SimpleChannel NETWORK;
     static {
@@ -43,14 +42,12 @@ public class Ceres {
     }
 
     private static ResourceLocation makeResourceLocation() {
-        // 使用最新的方法创建ResourceLocation
-        return ResourceLocation.of(MOD_ID + ":main", ':');
+        return new ResourceLocation(MOD_ID + ":main");
     }
 
     private boolean isModernMode;
 
     public Ceres() {
-        // 使用最新的方法获取事件总线
         final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         modEventBus.addListener(this::commonSetup);
@@ -67,9 +64,20 @@ public class Ceres {
             if (isModernMode) {
                 NettyOptimizer.shutdown();
             }
+            PacketCompressor.shutdown();
+            CeresCompressionManager.shutdown();
         }));
 
         LOGGER.info("Ceres network optimization mod initialized - Version: {}", VERSION);
+        initialized = true;
+    }
+
+    /**
+     * 检查Ceres是否已初始化
+     * @return 如果Ceres已初始化则返回true
+     */
+    public static boolean isInitialized() {
+        return initialized;
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -91,6 +99,9 @@ public class Ceres {
                 NetworkOptimizer.init();
                 LOGGER.info("Vanilla mode: Network optimizer initialized");
             }
+
+            // 初始化压缩管理器
+            CeresCompressionManager.init();
         });
     }
 
@@ -131,7 +142,7 @@ public class Ceres {
         LOGGER.info("Initializing common network optimizations");
 
         boolean enableCompression = CeresConfig.COMMON.enableCompression.get();
-        int compressionThreshold = CeresConfig.COMMON.compressionThreshold.get();
+        int compressionThreshold = CeresConfig.COMMON.minPacketSizeToCompress.get();
         int compressionLevel = CeresConfig.COMMON.compressionLevel.get();
         boolean enableNettyOptimization = CeresConfig.COMMON.enableNettyOptimization.get();
         boolean enableDuplicateFiltering = CeresConfig.COMMON.enableDuplicateFiltering.get();

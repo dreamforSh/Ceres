@@ -1,4 +1,3 @@
-// CeresMinecraftCipherDecoder.java
 package com.xinian.ceres.common.network.pipeline;
 
 import com.google.common.base.Preconditions;
@@ -31,14 +30,14 @@ public class CeresMinecraftCipherDecoder extends MessageToMessageDecoder<ByteBuf
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         ByteBuf copy = ctx.alloc().buffer(in.readableBytes()).writeBytes(in);
         try {
-            // 解密数据
+
             cipher.process(copy);
-            // 更新统计信息
+
             bytesProcessed += copy.readableBytes();
-            // 添加到输出列表
+
             out.add(copy);
         } catch (Exception e) {
-            copy.release(); // 如果抛出异常，copy将永远不会被使用
+            copy.release();
             throw e;
         }
     }

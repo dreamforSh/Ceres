@@ -2,6 +2,8 @@ package com.xinian.ceres.client;
 
 import com.xinian.ceres.Ceres;
 import com.xinian.ceres.CeresConfig;
+import com.xinian.ceres.common.compression.CeresCompressionManager;
+import com.xinian.ceres.common.compression.CeresLibdeflate;
 import com.xinian.ceres.network.DuplicatePacketFilter;
 import com.xinian.ceres.network.NettyOptimizer;
 import com.xinian.ceres.network.PacketCompressor;
@@ -13,14 +15,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.text.DecimalFormat;
 
-/**
- * Ceres调试覆盖层
- * 在F3调试屏幕上显示网络优化统计信息
- */
 @Mod.EventBusSubscriber(modid = Ceres.MOD_ID, value = Dist.CLIENT)
 public class DebugOverlay {
 
@@ -28,57 +26,64 @@ public class DebugOverlay {
     private static int updateCounter = 0;
     private static boolean hasNetworkActivity = false;
 
-    // 用于格式化数字的格式化器
+
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,##0.00");
     private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("#,##0.0");
 
-    // 统计数据
+
     private static long totalOriginalBytes = 0;
     private static long totalOptimizedBytes = 0;
     private static long totalPackets = 0;
     private static long totalFilteredPackets = 0;
     private static long sessionStartTime = System.currentTimeMillis();
 
-    /**
-     * 客户端Tick事件处理
-     * 用于定期更新调试信息
-     */
+
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.side != LogicalSide.CLIENT || event.phase != TickEvent.Phase.END) {
             return;
         }
 
-        // 每5刻更新一次统计信息（约0.25秒），加快刷新速度
-        if (updateCounter++ % 5 == 0) {
+
+        int updateFrequency = CeresConfig.CLIENT.statsUpdateFrequency.get();
+        if (updateCounter++ % updateFrequency == 0) {
             updateDebugInfo();
         }
     }
 
-    /**
-     * 更新调试信息
-     */
+
     private static void updateDebugInfo() {
         CERES_DEBUG_LINES.clear();
 
-        // 添加模式信息
-        CERES_DEBUG_LINES.add("[Ceres] Mode: " + CeresConfig.COMMON.optimizationMode.get());
 
-        // 检查是否有网络活动
+        CERES_DEBUG_LINES.add("[Ceres] Mode: " + CeresConfig.COMMON.optimizationMode.get() +
+                ", Engine: " + CeresConfig.COMMON.compressionEngine.get());
+
+
         hasNetworkActivity = checkNetworkActivity();
 
-        // 更新统计数据
+
         updateStatistics();
 
         if (!hasNetworkActivity) {
-            // 如果没有网络活动，显示状态信息
+
             CERES_DEBUG_LINES.add("[Ceres] Status: Waiting for network activity...");
 
-            // 添加配置信息，即使没有网络活动也能显示
+
             if (CeresConfig.COMMON.enableCompression.get()) {
                 CERES_DEBUG_LINES.add("[Ceres] Compression: Enabled (Threshold: " +
-                        CeresConfig.COMMON.compressionThreshold.get() + " bytes, Level: " +
-                        CeresConfig.COMMON.compressionLevel.get() + ")");
+                        CeresConfig.COMMON.minPacketSizeToCompress.get() + " bytes, Format: " +
+                        CeresConfig.COMMON.compressionFormat.get() + ")");
+
+
+                String levelInfo;
+                if (CeresConfig.COMMON.compressionEngine.get() == CeresConfig.CompressionEngine.LIBDEFLATE &&
+                        CeresLibdeflate.isAvailable()) {
+                    levelInfo = "Level: " + CeresConfig.COMMON.advancedCompressionLevel.get() + " (libdeflate)";
+                } else {
+                    levelInfo = "Level: " + CeresConfig.COMMON.compressionLevel.get() + " (Java)";
+                }
+                CERES_DEBUG_LINES.add("[Ceres] " + levelInfo);
             } else {
                 CERES_DEBUG_LINES.add("[Ceres] Compression: Disabled");
             }
@@ -89,27 +94,25 @@ public class DebugOverlay {
                 CERES_DEBUG_LINES.add("[Ceres] Duplicate Filtering: Disabled");
             }
         } else {
-            // 如果有网络活动，显示统计信息
 
-            // 添加压缩统计信息
+
+
             CERES_DEBUG_LINES.add("[Ceres] " + PacketCompressor.getCompressionStats());
 
-            // 添加重复过滤统计信息
+
             CERES_DEBUG_LINES.add("[Ceres] " + DuplicatePacketFilter.getStats());
 
-            // 添加Netty优化统计信息（如果使用现代模式）
+
             if (CeresConfig.COMMON.optimizationMode.get() == CeresConfig.OptimizationMode.MODERN) {
                 CERES_DEBUG_LINES.add("[Ceres] " + NettyOptimizer.getNetworkStats());
             }
 
-            // 添加总体优化统计信息
+
             addOverallStatistics();
         }
     }
 
-    /**
-     * 更新统计数据
-     */
+
     private static void updateStatistics() {
 
         String compressionStats = PacketCompressor.getCompressionStats();
@@ -133,22 +136,20 @@ public class DebugOverlay {
                     }
                 }
             } catch (Exception e) {
-                // 解析失败，忽略
+
             }
         }
 
-        // 从DuplicatePacketFilter获取过滤统计信息
+
         totalFilteredPackets = DuplicatePacketFilter.getFilteredPacketsCount();
 
-        // 从NettyOptimizer获取总包数（如果使用现代模式）
+
         if (CeresConfig.COMMON.optimizationMode.get() == CeresConfig.OptimizationMode.MODERN) {
             totalPackets = NettyOptimizer.getSentPacketsCount();
         }
     }
 
-    /**
-     * 添加总体优化统计信息
-     */
+
     private static void addOverallStatistics() {
 
         long sessionDurationMs = System.currentTimeMillis() - sessionStartTime;
@@ -196,12 +197,7 @@ public class DebugOverlay {
                 (totalPackets > 0) ? (totalFilteredPackets * 100.0 / totalPackets) : 0));
     }
 
-    /**
-     * 格式化持续时间
-     *
-     * @param seconds 秒数
-     * @return 格式化的持续时间字符串
-     */
+
     private static String formatDuration(long seconds) {
         long hours = seconds / 3600;
         long minutes = (seconds % 3600) / 60;
@@ -216,9 +212,7 @@ public class DebugOverlay {
         }
     }
 
-    /**
-     * 检查是否有网络活动
-     */
+
     private static boolean checkNetworkActivity() {
         boolean hasCompressedPackets = !PacketCompressor.getCompressionStats().startsWith("No packets");
         long filteredPackets = DuplicatePacketFilter.getFilteredPacketsCount();
@@ -232,9 +226,7 @@ public class DebugOverlay {
         return hasCompressedPackets || filteredPackets > 0 || sentPackets > 0;
     }
 
-    /**
-     * 渲染调试信息事件处理
-     */
+
     @SubscribeEvent
     public static void onRenderDebugInfo(CustomizeGuiOverlayEvent.DebugText event) {
         if (!CeresConfig.CLIENT.showNetworkStats.get()) {
@@ -249,10 +241,7 @@ public class DebugOverlay {
         }
     }
 
-    /**
-     * 重置统计信息
-     * 在连接到新服务器时调用
-     */
+
     public static void resetStats() {
         totalOriginalBytes = 0;
         totalOptimizedBytes = 0;

@@ -47,11 +47,11 @@ public class CeresMinecraftCompressDecoder extends ByteToMessageDecoder {
             int claimedUncompressedSize = packetBuf.readVarInt();
 
             if (claimedUncompressedSize == 0) {
-                // 未压缩的数据包，直接传递
+
                 ByteBuf uncompressedData = packetBuf.readBytes(packetBuf.readableBytes());
                 out.add(uncompressedData);
 
-                // 更新统计信息
+
                 if (CeresConfig.COMMON.enableLogging.get()) {
                     TOTAL_UNCOMPRESSED_BYTES.addAndGet(uncompressedData.readableBytes());
                 }
@@ -68,15 +68,15 @@ public class CeresMinecraftCompressDecoder extends ByteToMessageDecoder {
 
                 int compressedSize = packetBuf.readableBytes();
 
-                // 创建输出缓冲区
+
                 ByteBuf uncompressed = ctx.alloc().buffer(claimedUncompressedSize);
                 try {
-                    // 解压数据
+
                     compressor.inflate(in, uncompressed, claimedUncompressedSize);
                     out.add(uncompressed);
                     in.clear();
 
-                    // 更新统计信息
+
                     if (CeresConfig.COMMON.enableLogging.get()) {
                         TOTAL_COMPRESSED_BYTES.addAndGet(compressedSize);
                         TOTAL_UNCOMPRESSED_BYTES.addAndGet(claimedUncompressedSize);
