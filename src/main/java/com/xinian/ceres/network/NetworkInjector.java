@@ -29,7 +29,7 @@ public class NetworkInjector {
             if (event.getEntity() instanceof ServerPlayer) {
                 ServerPlayer player = (ServerPlayer) event.getEntity();
                 ServerGamePacketListenerImpl packetListener = player.connection;
-                Connection networkManager = packetListener.getConnection();
+                Connection networkManager = packetListener.connection;
 
 
                 NettyOptimizer.injectOptimizer(networkManager, NetworkDirection.PLAY_TO_CLIENT);

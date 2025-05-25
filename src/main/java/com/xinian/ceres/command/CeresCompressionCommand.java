@@ -13,14 +13,14 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.function.Supplier;
 
 public class CeresCompressionCommand {
-
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("ceres")
-                        .requires(source -> source.hasPermission(2)) // 需要OP权限
+                        .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("compression")
                                 .then(Commands.literal("stats")
                                         .executes(CeresCompressionCommand::showStats))
@@ -41,25 +41,18 @@ public class CeresCompressionCommand {
         );
     }
 
-
     private static int showStats(CommandContext<CommandSourceStack> context) {
-        context.getSource().sendSuccess(
-                Component.literal("Compression stats: " + CeresCompressionManager.getCompressionStats()),
-                false
-        );
+        Supplier<Component> message = () -> Component.literal("Compression stats: " + CeresCompressionManager.getCompressionStats());
+        context.getSource().sendSuccess(message, false);
         return 1;
     }
-
 
     private static int resetStats(CommandContext<CommandSourceStack> context) {
         CeresCompressionManager.resetStats();
-        context.getSource().sendSuccess(
-                Component.literal("Compression stats reset"),
-                false
-        );
+        Supplier<Component> message = () -> Component.literal("Compression stats reset");
+        context.getSource().sendSuccess(message, false);
         return 1;
     }
-
 
     private static int setEngine(CommandContext<CommandSourceStack> context) {
         String engineName = StringArgumentType.getString(context, "type");
@@ -70,38 +63,26 @@ public class CeresCompressionCommand {
 
             Ceres.LOGGER.info("Requested to change compression engine to: {}", engine);
 
-            context.getSource().sendSuccess(
-                    Component.literal("Compression engine change requested: " + engine + " (not implemented yet)"),
-                    true
-            );
+            Supplier<Component> message = () -> Component.literal("Compression engine change requested: " + engine + " (not implemented yet)");
+            context.getSource().sendSuccess(message, true);
             return 1;
         } catch (IllegalArgumentException e) {
-            context.getSource().sendFailure(
-                    Component.literal("Invalid compression engine: " + engineName)
-            );
+            context.getSource().sendFailure(Component.literal("Invalid compression engine: " + engineName));
             return 0;
         }
     }
 
-    /**
-     * 运行压缩基准测试
-     */
     private static int runBenchmark(CommandContext<CommandSourceStack> context) {
-        context.getSource().sendSuccess(
-                Component.literal("Running compression benchmark..."),
-                false
-        );
+        Supplier<Component> message = () -> Component.literal("Running compression benchmark...");
+        context.getSource().sendSuccess(message, false);
 
-        // 如果是玩家执行命令，向玩家发送结果
         if (context.getSource().getEntity() instanceof ServerPlayer) {
             ServerPlayer player = (ServerPlayer) context.getSource().getEntity();
             CompressionBenchmark.runBenchmarkForPlayer(player);
         } else {
-            // 否则，记录到控制台
             CompressionBenchmark.runBenchmark();
         }
 
         return 1;
     }
 }
-

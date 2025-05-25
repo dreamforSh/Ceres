@@ -12,4 +12,4 @@ plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '0.7.0'
 }
 
-rootProject.name = 'ceres'
+rootProject.name = 'ceres-1-20-1'

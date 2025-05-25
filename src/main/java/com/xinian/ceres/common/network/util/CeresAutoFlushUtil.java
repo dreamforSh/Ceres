@@ -17,8 +17,11 @@ public class CeresAutoFlushUtil {
      */
     public static void setAutoFlush(ServerPlayer player, boolean val) {
         if (player.getClass() == ServerPlayer.class) {
-            CeresConfigurableAutoFlush configurableAutoFlusher = ((CeresConfigurableAutoFlush) player.connection.getConnection());
-            configurableAutoFlusher.setShouldAutoFlush(val);
+
+            Connection networkConnection = player.connection.connection;
+            if (networkConnection instanceof CeresConfigurableAutoFlush) {
+                ((CeresConfigurableAutoFlush) networkConnection).setShouldAutoFlush(val);
+            }
         }
     }
 
@@ -42,11 +45,12 @@ public class CeresAutoFlushUtil {
      */
     public static void flushQueue(ServerPlayer player) {
         if (player.getClass() == ServerPlayer.class) {
-            CeresConfigurableAutoFlush configurableAutoFlusher = ((CeresConfigurableAutoFlush) player.connection.getConnection());
-            configurableAutoFlusher.flushQueue();
+            Connection networkConnection = player.connection.connection;
+            if (networkConnection instanceof CeresConfigurableAutoFlush) {
+                ((CeresConfigurableAutoFlush) networkConnection).flushQueue();
+            }
         }
     }
-
     /**
      * 手动刷新网络连接队列
      *

@@ -150,7 +150,7 @@ public abstract class CeresChunkMapFlushMixin {
             this.playerMap.updatePlayer(oldChunkPos, newChunkPos, player);
         }
 
-        // 玩家*始终*需要发送区块，因为出于某种原因，区块加载和卸载数据包都由同一个方法处理
+
         if (player.level == this.level)
             this.sendChunkWatchPackets(oldPos, player);
     }

@@ -149,7 +149,7 @@ public class CeresLibdeflate {
 
         Path tempFile = tempDir.resolve(fileName);
 
-        
+
         tempFile.toFile().deleteOnExit();
         tempDir.toFile().deleteOnExit();
 
