@@ -1,117 +1,113 @@
 # Ceres
 
-## 概述
+## Overview
 
-Ceres 是一个为 Minecraft设计的高性能网络优化模组，目前只有1.19.2forge版本，旨在减少网络流量、降低延迟并提高多人游戏体验。通过多种方法，Ceres 可以显著减少 Minecraft 客户端和服务器之间传输的数据量，特别适合网络条件不佳或大型服务器环境。
-其完成了对velocity的netty的原生实现，对高性能的 libdeflate 原生压缩的实现。
+Ceres is a high-performance network optimization mod designed for Minecraft .It aims to reduce network traffic, lower latency, and enhance multiplayer gaming experiences. Through various methods, Ceres significantly decreases the data volume transmitted between Minecraft clients and servers, making it particularly suitable for poor network conditions or large-scale server environments.  
+It features a native implementation of Velocity's Netty framework and integrates the high-performance libdeflate compression library.
 
-## 感谢velocity和pluto
+## Acknowledgments to Velocity and Pluto
 
-## 主要功能
+## Key Features
 
-### 数据包压缩
-1.仅压缩超过阈值的数据包，避免小数据包的压缩开销
+### Packet Compression
+1. Compresses only packets exceeding a threshold to avoid overhead for small packets  
+2. Balances compression ratio and performance as needed  
+3. Automatically uses raw data if compression yields larger sizes  
 
-2.根据需要平衡压缩率和性能
+### Duplicate Packet Filtering
+- **Smart Detection**: Identifies and filters redundant network packets  
+- **Type Filtering**: Configurable filtering for position, chunk, and entity packets  
+- **Safety Mechanisms**: Timeout and max consecutive duplicates ensure game state synchronization  
 
-3.如果压缩后体积更大，自动使用原始数据
+### Network Optimization Modes
+- **Vanilla Mode**: Uses Forge's networking system for maximum compatibility  
+- **Modern Mode**: Leverages Netty directly for stronger optimizations (may conflict with some mods)  
 
-### 重复数据包过滤
-- **智能检测**：识别并过滤重复的网络数据包，减少冗余传输
-- **类型过滤**：可单独配置位置、区块和实体数据包的过滤
-- **安全机制**：超时和最大连续重复设置确保游戏状态始终同步
+### Packet Batching
+- **Intelligent Batching**: Merges small packets into larger ones to reduce overhead  
+- **Configurable Latency**: Adjust batching delays to balance responsiveness and efficiency  
+- **Priority Handling**: Ensures critical packets are never delayed  
 
-### 网络优化模式
-- **原版模式**：使用 Forge 网络系统，提供最大兼容性
-- **现代模式**：直接使用 Netty 框架，提供更强大的优化但可能与某些模组不兼容
+## Performance Impact
 
-### 数据包批处理
-- **智能批处理**：将多个小数据包合并为一个大数据包，减少网络开销
-- **可配置延迟**：调整批处理延迟以平衡实时性和效率
-- **优先级处理**：确保重要数据包不会被延迟
+In our tests, Ceres excels across various network conditions:
 
-## 性能影响
+| Scenario                  | Traffic Reduction | Latency Improvement |
+|---------------------------|-------------------|---------------------|
+| High-entity-density areas | Up to 75%        | 15-30%             |
+| Large redstone machines   | Up to 60%        | 10-25%             |
+| Rapid chunk exploration   | Up to 50%        | 5-20%              |
+| Multiplayer PVP           | Up to 40%        | 10-15%             |
 
-在我们的测试中，Ceres 在各种网络条件下都表现出色：
+| Feature          | JAVA     | LIBDEFLATE       |
+|-------------------|----------|------------------|
+| CPU Usage         | Moderate | Low              |
+| Compression Ratio | Good     | Excellent        |
+| Compatibility     | Best     | Requires native  |
+| Performance       | Standard | 2-4x faster      |
 
-| 场景 | 网络流量减少 | 延迟改善 |
-|------|------------|---------|
-| 高密度实体区域 | 最高 75% | 15-30% |
-| 大型红石机器 | 最高 60% | 10-25% |
-| 快速探索新区块 | 最高 50% | 5-20% |
-| 多人 PVP | 最高 40% | 10-15% |
+## Configuration Options
 
-| 特性 | JAVA | LIBDEFLATE |
-|------|------|------------|
-| CPU 使用率 | 中等 | 低 |
-| 压缩比 | 良好 | 优秀 |
-| 兼容性 | 最佳 | 需要原生库 |
-| 性能 | 标准 | 2-4倍提升 |
+Ceres offers extensive configuration:
 
+### General Settings
+- Optimization mode (Vanilla/Modern)  
+- Packet compression toggle  
+- Compression threshold/level  
+- Duplicate filtering settings  
 
-## 配置选项
+### Client Settings
+- Client optimization toggle  
+- Batching latency/size  
+- Network stats display  
 
-Ceres 提供了丰富的配置选项，可以根据您的需求进行调整：
+### Server Settings
+- Server optimization toggle  
+- Server batching parameters  
+- Chunk update optimizations  
 
-### 通用设置
-- 优化模式选择（原版/现代）
-- 数据包压缩启用/禁用
-- 压缩阈值和级别
-- 重复数据包过滤设置
-
-### 客户端设置
-- 客户端优化启用/禁用
-- 批处理延迟和大小
-- 网络统计显示
-
-### 服务器设置
-- 服务器优化启用/禁用
-- 服务器批处理参数
-- 区块更新优化
-
-
+``` 
+/ceres compression stats     - Show compression statistics  
+/ceres compression reset     - Reset stats  
+/ceres compression engine <type> - Switch compression engine  
+/ceres compression benchmark - Run performance tests  
 ```
-/ceres compression stats - 显示压缩统计信息
-/ceres compression reset - 重置统计数据
-/ceres compression engine <type> - 切换压缩引擎
-/ceres compression benchmark - 运行性能测试
-```
-## 兼容性
 
-Ceres 设计为与大多数 Minecraft 模组兼容。原版模式提供最佳兼容性，而现代模式提供最大优化。
+## Compatibility
 
-如果您遇到任何兼容性问题，请尝试切换到原版模式或禁用特定的优化功能。
+Ceres is designed for compatibility with most Minecraft mods. Vanilla Mode ensures maximum compatibility, while Modern Mode prioritizes optimizations.  
 
-### 注意事项
-- 与某些网络优化模组可能存在冲突
-- 使用 LIBDEFLATE 引擎需要支持的操作系统和架构
+If encountering issues, try switching to Vanilla Mode or disabling specific optimizations.  
 
-## 安装
+### Notes  
+- May conflict with other network optimization mods  
+- LIBDEFLATE requires supported OS/architecture  
 
-1. 确保已安装 Minecraft 1.19.2 和兼容版本的 Forge
-2. 下载 Ceres 模组文件
-3. 将模组文件放入 Minecraft 的 `mods` 文件夹
-4. 启动游戏，Ceres 将自动配置并开始工作
+## Installation
 
-## 监控性能
+1. Ensure Minecraft 1.19.2 and compatible Forge are installed  
+2. Download the Ceres mod file  
+3. Place the file in Minecraft's `mods` folder  
+4. Launch the game – Ceres auto-configures upon startup  
 
-Ceres 提供了内置的性能监控工具：
+## Performance Monitoring
 
-1. 在游戏中按 F3 打开调试屏幕
-2. 查找 `[Ceres]` 条目，显示当前的优化统计
-3. 统计信息包括压缩率、过滤的数据包数量和总体网络流量
+Ceres includes built-in monitoring tools:  
+1. Press F3 to open the debug screen  
+2. Locate `[Ceres]` entries showing optimization stats  
+3. Stats include compression ratios, filtered packets, and network traffic  
 
-## 常见问题
+## FAQ
 
-**问：Ceres 是否需要在服务器和客户端都安装？**
-答：为获得最佳效果，建议双端安装，但仅客户端安装也能提供部分优化。
+**Q: Does Ceres require installation on both server and client?**  
+A: For best results, install on both. Client-only installation provides partial optimizations.  
 
-**问：使用 Ceres 会影响游戏稳定性吗？**
-答：Ceres 经过精心设计，包含多重安全机制，确保不会影响游戏稳定性。如果遇到问题，可以随时禁用特定功能。
+**Q: Does Ceres affect game stability?**  
+A: Ceres includes multiple safeguards to ensure stability. Disable specific features if issues arise.  
 
-**问：为什么我看不到网络统计信息？**
-答：确保在配置中启用了 `showNetworkStats` 选项，并按 F3 打开调试屏幕。
+**Q: Why can't I see network stats?**  
+A: Enable `showNetworkStats` in config and check the F3 debug screen.  
 
-## 贡献与支持
+## Contributions & Support
 
-Ceres 是一个开源项目，欢迎贡献代码和提出建议。如果您遇到问题或有改进想法，请访问我们的 GitHub 仓库提交 issue 或 PR。
+Ceres is open-source. We welcome code contributions and suggestions. Please submit issues or PRs via our GitHub repository.
